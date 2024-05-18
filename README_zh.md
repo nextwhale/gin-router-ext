@@ -29,6 +29,8 @@ var app = ginrouterext.New(engExisted)
 
 ### 为路由设置自定义属性
 在添加REST路由后，紧跟使用Set方法设置自定义属性.
+> group.Set()的参数支持:  
+> group.Set(路由名, 是否需要认证, 是否需要权限, 自定义属性map) 
 
 例如：
 ```go

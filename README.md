@@ -24,15 +24,17 @@ In the gin framework, we use ` gin.New() ` to create gin Engine object as app in
 When using this package, we use `ginrouterext.New() ` to create an `EngineExt` as instance instead. `EngineExt` is an extended struct of gin.Engine.
 
 ```go
-// 创建一个全新的实例：
+// create an new instance
 var app = ginrouterext.New(nil)
-// 或者，代入已有的gin.Engine实例：
+// or create instance with existed gin.Engine object
 var engExisted = &gin.New()
 var app = ginrouterext.New(engExisted)
 ```
 
 ### Set custom attributes for route
-Use method Set() to define custom attributes for each route following the REST method.
+Use method `group.Set()` to define custom attributes for each route following the REST method. 
+> The params of group.Set():  
+> group.Set(routeName, requiresAuth, requiresACL, extraMap) 
 
 e.g:
 ```go
