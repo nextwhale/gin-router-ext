@@ -3,7 +3,7 @@
 GinRouterExt is a library suitable for the Gin framework, which extends the Gin router, and supports configurable attributes wihle defining routes.
 
 ### Features
-- Retained the origin methods of gin.Engine、Gin.RouterGroup, rewrited the REST methods of RouterGroup to set custom attributes for each route.
+- Retained the origin methods of gin.Engine and gin.RouterGroup, rewrited the REST methods of RouterGroup to set custom attributes for each route.
 
 - Supports retrieving the custom attributes of each route from middleware, and exporting those routes after defined.
 
@@ -13,7 +13,7 @@ GinRouterExt is a library suitable for the Gin framework, which extends the Gin 
 ### Installation
 
 ```
-go get - u github.com nextwheel/ gin-router-ext@latest
+go get -u github.com/nextwheel/gin-router-ext@latest
 ```
 
 ## Basic usage
@@ -115,7 +115,7 @@ groupAPI.NoRouteByGroup(func(c *gin.Context) {
 ```
 
 ## Note
-if you encounter any issue, feel free to share it. 
+if you encountered any issue, just feel free to post it to look for help. 
 And I strongly encourage contributing to this project.
 
 ## License

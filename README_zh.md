@@ -2,7 +2,7 @@
 
 GinRouterExt是适用于Gin框架的库，对Gin的路由功能进行了扩展，支持可配置属性的路由定义。
 ### 特点
-- 保留并扩展了原gin.Engine、Gin.RouterGroup的方法，对RouterGroup的路由方法重写以记录自定义的路由属性。
+- 保留并扩展了原gin.Engine、gin.RouterGroup的方法，对RouterGroup的路由方法重写以记录自定义的路由属性。
 - 从中间件获取当前路由的配置信息，以及在server启动后导出全部路由配置信息。
 - 增加基于Group路径的404页面方法。例如，综合性网站缺省404为html页面，而API模块的缺省404页则可能输出json格式。
 
