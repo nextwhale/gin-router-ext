@@ -28,14 +28,13 @@ var app = ginrouterext.New(engExisted)
 ```
 
 ### 为路由设置自定义属性
-在添加REST路由后，紧跟使用Set方法设置自定义属性.
-> group.Set()的参数支持:  
-> group.Set(路由名, 是否需要认证, 是否需要权限, 自定义属性map) 
+在添加REST路由后，紧跟使用`route.Set()`方法设置基本属性, 使用`route.SetAttrs()`方法添加自定义属性:
+> apiGroup.GET("/hello", handler).Set(路由名, 是否需要认证, 是否需要权限).SetAttrs(map[string]string{"key1":"val1"})
 
 例如：
 ```go
 groupAPI := app.Group("/api")
-groupAPI.GET("/contacts", handler).Set("Getting contacts", true, false, map[string]string{"name_fr":"Obtenir un contact","sitemap":"0"}) 
+groupAPI.GET("/contacts", handler).Set("Contacts", true, false).SetAttrs(map[string]string{"name_fr":"Obtenir un contact","sitemap":"0"}) 
 ```
 
 定义好后，您可以从中间件中获取当前匹配的路由配置，并作后续处理。
@@ -44,12 +43,12 @@ groupAPI.GET("/contacts", handler).Set("Getting contacts", true, false, map[stri
 ### 从中间件中获取当前路由配置
 
 我们通常需要从中间件中验证登录状态、访问权限(ACL).  
-通过`group.GetRouteSettings(ctx)`来获取当前匹配到的路由.  
+通过`group.MatchedRouteInfo(ctx)`来获取当前匹配到的路由.  
 
 举例：
 ```go
 	groupAPI.Use(func(ctx *gin.Context) {
-		rs := groupAPI.GetRouteSettings(ctx)
+		rs := groupAPI.MatchedRouteInfo(ctx)
 		if rs == nil {
 			return
 		}
@@ -67,7 +66,7 @@ groupAPI.GET("/contacts", handler).Set("Getting contacts", true, false, map[stri
 			return
 		}
 		// 获取额外的自定义配置
-		_ = rs.GetExtra("name_fr")
+		_ = rs.GetAttr("name_fr")
 	})
 ```	
 

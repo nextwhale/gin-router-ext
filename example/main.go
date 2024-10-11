@@ -2,9 +2,9 @@ package main
 
 import (
 	"fmt"
-	. "ginrouterextexample/init"
-
 	"github.com/gin-gonic/gin"
+	
+	. "ginrouterextexample/init"
 )
 
 func handleAdmin(ctx *gin.Context) {
@@ -27,7 +27,7 @@ func init() {
 		groupAdmin.Use(func(ctx *gin.Context) {
 			ssoToken := ctx.Request.Header.Get("user_id")
 			roleID := ctx.Request.Header.Get("role_id")
-			rs := groupAdmin.GetRouteSettings(ctx)
+			rs := groupAdmin.MatchedRouteInfo(ctx)
 
 			fmt.Print("rs : ", rs)
 			if rs == nil {
@@ -46,15 +46,14 @@ func init() {
 			}
 		})
 
-		groupAdmin.GET("/hello", handleAdmin).Set("Saying Hello", false, false, nil)
-		groupAdmin.GET("/contacts", handleAdmin).Set("Getting contacts", true, true, nil)
-		groupAdmin.GET("/article/list", handleAdmin).Set("Article list", true, true, map[string]string{"showInSitemap": "1", "name_en": "Article List"})
-		groupAdmin.PUT("/article/edit/:id", handleAdmin).Set("Article editting", true, true, map[string]string{"showInSitemap": "1", "name_ja": "ビデオモデレーター"})
-		groupAdmin.DELETE("/article/del/:id", handleAdmin).Set("Article deletting", true, true, map[string]string{"showInSitemap": "0", "logPrint": "1"})
-		groupAdmin.GET("/video/list", handleAdmin).Set("Video list", true, true, map[string]string{"showInSitemap": "1", "logPrint": "0"})
-		groupAdmin.PUT("/video/edit/:id", handleAdmin).Set("Video editting", true, true, map[string]string{"showInSitemap": "0", "logPrint": "1"})
-		groupAdmin.DELETE("/video/del/:id", handleAdmin).Set("Video deletting", true, true, map[string]string{"showInSitemap": "1", "logPrint": "1"})
-
+		groupAdmin.GET("/hello", handleAdmin).Set("Saying Hello", false, false)
+		groupAdmin.GET("/contacts", handleAdmin).Set("Getting contacts", true, true).SetAttrs(nil)
+		groupAdmin.GET("/article/list", handleAdmin).Set("Article list", true, true).SetAttrs(map[string]string{"showInSitemap": "1", "name_en": "Article List"})
+		groupAdmin.PUT("/article/edit/:id", handleAdmin).Set("Article editting", true, true).SetAttrs(map[string]string{"showInSitemap": "1", "name_ja": "ビデオモデレーター"})
+		groupAdmin.DELETE("/article/del/:id", handleAdmin).Set("Article deletting", true, true).SetAttrs(map[string]string{"showInSitemap": "0", "logPrint": "1"})
+		groupAdmin.GET("/video/list", handleAdmin).Set("Video list", true, true).SetAttrs(map[string]string{"showInSitemap": "1", "logPrint": "0"})
+		groupAdmin.PUT("/video/edit/:id", handleAdmin).Set("Video editting", true, true).SetAttrs(map[string]string{"showInSitemap": "0", "logPrint": "1"})
+		groupAdmin.DELETE("/video/del/:id", handleAdmin).Set("Video deletting", true, true).SetAttrs(map[string]string{"showInSitemap": "1", "logPrint": "1"})
 
 		// add a 404 handler for group /admin
 		groupAdmin.NoRouteByGroup(func(c *gin.Context) {
@@ -68,8 +67,8 @@ func init() {
 
 	gWeb := app.Group("/web")
 	{
-		gWeb.GET("/about", handleWeb).Set("About us", false, false, map[string]string{"sitemap": "1"})
-		gWeb.PUT("/user/account", handleWeb).Set("Modify account", true, false, nil)
+		gWeb.GET("/about", handleWeb).Set("About us", false, false).SetAttrs(map[string]string{"sitemap": "1"})
+		gWeb.PUT("/user/account", handleWeb).Set("Modify account", true, false).SetAttrs(nil)
 
 		// customize a 404 handler for this group
 		gWeb.NoRouteByGroup(func(ctx *gin.Context) {
@@ -90,7 +89,6 @@ func main() {
 		panic("Gin server: Running error")
 	}
 }
-
 
 // To test this example, use curl with:
 // Method not found:            curl -X GET http://127.0.0.1:8000/admin/article/del/18

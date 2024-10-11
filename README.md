@@ -32,26 +32,25 @@ var app = ginrouterext.New(engExisted)
 ```
 
 ### Set custom attributes for route
-Use method `group.Set()` to define custom attributes for each route following the REST method. 
-> The params of group.Set():  
-> group.Set(routeName, requiresAuth, requiresACL, extraMap) 
+Use method `route.Set()` to define essential setting, and use `route.SetAttrs()` to add custom attributes:
+> apiGroup.GET("/hello", handler).Set(routeNameStr, requiresAuthBool, requiersACLBool).SetAttrs(map[string]string{"key1":"val1"})
 
 e.g:
 ```go
 groupAPI := app.Group("/api")
-groupAPI.GET("/contacts", handler).Set("Getting contacts", true, false, map[string]string{"name_fr":"Obtenir un contact","sitemap":"0"}) 
+groupAPI.GET("/contacts", handler).Set("Contacts", true, false).SetAttrs(map[string]string{"name_fr":"Obtenir un contact","sitemap":"0"}) 
 ```
 
 After that, we can retrieve the matched route setting in middlewares.
 
 ### Get the current route setting from middleware
 
-Typically, we use middleware to verify login status and access permissions (ACLs) from middleware. By invoking `group.GetRouteSettings(ctx) ` in middleware can get the matched route setting.
+Typically, we use middleware to verify login status and access permissions (ACLs) from middleware. By invoking `group.MatchedRouteInfo(ctx) ` in middleware can get the matched route setting.
 
 e.g:
 ```go
 	groupAPI.Use(func(ctx *gin.Context) {
-		rs := groupAPI.GetRouteSettings(ctx)
+		rs := groupAPI.MatchedRouteInfo(ctx)
 		if rs == nil {
 			return
 		}
@@ -69,7 +68,7 @@ e.g:
 			return
 		}
 		// To get extra attibute which was defined while adding this route
-		_ = rs.GetExtra("name_fr")
+		_ = rs.GetAttr("name_fr")
 	})
 ```	
 

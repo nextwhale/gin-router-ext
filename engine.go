@@ -25,8 +25,8 @@ const HTTPMethodOPTIONS HTTPMethod = "OPTIONS"
 // /////////////////////
 // Settings of single route
 // /////////////////////
-type RouteSetting struct {
-	// Order NO. by it been addedf
+type RouteInfo struct {
+	// The Order No. of being added
 	No int
 	// route method
 	Method HTTPMethod
@@ -39,10 +39,11 @@ type RouteSetting struct {
 	// Is route requires access control?
 	RequiresACL bool
 	// any custom params, tipically struct data, used when route matched
-	Extra map[string]string
+	Attrs map[string]string
 }
-func (ri *RouteSetting) GetExtra(key string) string{
-	return ri.Extra[key]
+
+func (ri *RouteInfo) GetAttr(key string) string {
+	return ri.Attrs[key]
 }
 
 // /////////////////////
@@ -89,13 +90,13 @@ func (e *EngineExt) NoRoute(handlers ...gin.HandlerFunc) {
 
 // /////////////////////
 // RouterGroupEx
-// RouterGroupEx inherits gin.RouterGroup, it provides extra route setting manipulators as well
+// RouterGroupEx inherits gin.RouterGroup, and it provides route attributes as well
 // /////////////////////
 type RouterGroupExt struct {
 	*gin.RouterGroup
 	eng           *EngineExt
-	routesIndexed map[string]*RouteSetting
-	lastRouteInfo *RouteSetting
+	routesIndexed map[string]*RouteInfo
+	lastRouteInfo  *RouteInfo
 }
 
 // retrieve to root group
@@ -110,7 +111,7 @@ func (r *RouterGroupExt) Group(relativePath string, handlers ...gin.HandlerFunc)
 		r.eng.groupsCreated[fp] = &RouterGroupExt{
 			RouterGroup:   r.RouterGroup.Group(relativePath, handlers...),
 			eng:           r.eng,
-			routesIndexed: make(map[string]*RouteSetting),
+			routesIndexed: make(map[string]*RouteInfo),
 		}
 	}
 	return r.eng.groupsCreated[fp]
@@ -164,7 +165,7 @@ func (r *RouterGroupExt) addRoute(method HTTPMethod, path string, handlers []gin
 
 	// save route info
 	rk := joinRouteIndex(string(method), r.BasePath(), path)
-	r.routesIndexed[rk] = &RouteSetting{
+	r.routesIndexed[rk] = &RouteInfo{
 		No:     len(r.routesIndexed) + 1,
 		Method: method,
 		Path:   path,
@@ -176,45 +177,48 @@ func (r *RouterGroupExt) addRoute(method HTTPMethod, path string, handlers []gin
 
 // set setting fields for last route
 // Note： This method shhould be used after GET/POST/PUT/DELETE/HEAD/OPTIONS only
-func (r *RouterGroupExt) Set(name string, requiresAuth bool, requiresACL bool, extra map[string]string) *RouterGroupExt {
-	if r.lastRouteInfo == nil {
-		return r
+func (r *RouterGroupExt) Set(name string, requiresAuth bool, requiresACL bool) *RouterGroupExt {
+	if r.lastRouteInfo != nil {
+		r.lastRouteInfo.Name = name
+		r.lastRouteInfo.RequiresAuth = requiresAuth
+		r.lastRouteInfo.RequiresACL = requiresACL
 	}
-	r.lastRouteInfo.Name = name
-	r.lastRouteInfo.RequiresAuth = requiresAuth
-	r.lastRouteInfo.RequiresACL = requiresACL
-	r.lastRouteInfo.Extra = extra
 	return r
 }
 
-// Get current requested RouteSetting .
+// set setting fields for last route
+// Note： This method shhould be used after GET/POST/PUT/DELETE/HEAD/OPTIONS only
+func (r *RouterGroupExt) SetAttrs(attrs map[string]string) *RouterGroupExt {
+	if r.lastRouteInfo != nil {
+		r.lastRouteInfo.Attrs = attrs
+	}
+	return r
+}
+
+// Get current RouteInfo requested
 // e.g: Using in middlewares for verifying
-func (r *RouterGroupExt) GetRouteSettings(c *gin.Context) *RouteSetting {
-	return r.GetRouteSettingsByPath(c.Request.Method, c.FullPath())
+func (r *RouterGroupExt) MatchedRouteInfo(c *gin.Context) *RouteInfo {
+	return r.GetRouteInfoByPath(c.Request.Method, c.FullPath())
 }
 
 // Get single route info by method and path
-func (r *RouterGroupExt) GetRouteSettingsByPath(method string, fullPath string) *RouteSetting {
+// Note: If the route was't add by this package, return nil
+func (r *RouterGroupExt) GetRouteInfoByPath(method string, fullPath string) *RouteInfo {
 	rk := joinRouteIndex(method, "", fullPath)
-	ri, ok := r.routesIndexed[rk]
-	if ok {
-		return ri
-	} else {
-		return nil
-	}
+	return r.routesIndexed[rk]
 }
 
 // Get the map of all routes added to this router instance
-func (r *RouterGroupExt) GetRoutesMap() map[string]*RouteSetting {
+func (r *RouterGroupExt) GetRoutesMap() map[string]*RouteInfo {
 	return r.routesIndexed
 }
 
 // Get access items
 // Those routes that set requiresACL:true will be returned
-func (r *RouterGroupExt) GetACLItems() map[string]*RouteSetting{
-	al := map[string]*RouteSetting{}
+func (r *RouterGroupExt) GetACLItems() map[string]*RouteInfo {
+	al := map[string]*RouteInfo{}
 	for ind, setting := range r.routesIndexed {
-	    if setting.RequiresACL {
+		if setting.RequiresACL {
 			al[ind] = setting
 		}
 	}
@@ -230,7 +234,7 @@ func New(eng *gin.Engine) *EngineExt {
 		Engine: eng,
 		rge: &RouterGroupExt{
 			RouterGroup:   &eng.RouterGroup,
-			routesIndexed: make(map[string]*RouteSetting),
+			routesIndexed: make(map[string]*RouteInfo),
 		},
 		groupsCreated:  make(map[string]*RouterGroupExt),
 		groupsNoRoute:  make(map[string][]gin.HandlerFunc),
@@ -251,7 +255,6 @@ func joinPaths(absolutePath, relativePath string) string {
 	}
 	return finalPath
 }
-
 
 // join a unique restful route index
 func joinRouteIndex(method, basePath, relativePath string) string {
